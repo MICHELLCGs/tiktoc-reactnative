@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, TouchableWithoutFeedback } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet , Image } from 'react-native';
+import Logo from '../assets/Logo/Tiktoc.png'; // Ajusta la ruta según sea necesario
 
 const SplashScreen = ({ navigation }) => {
   useEffect(() => {
@@ -9,61 +10,26 @@ const SplashScreen = ({ navigation }) => {
     }, 3000);
   }, [navigation]);
 
-  const scaleAnim = useRef(new Animated.Value(1)).current;
-
-  const handlePressIn = () => {
-    Animated.spring(scaleAnim, {
-      toValue: 1.3,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const handlePressOut = () => {
-    Animated.spring(scaleAnim, {
-      toValue: 1,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const renderLetter = (letter) => (
-    <TouchableWithoutFeedback
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
-      key={letter}
-    >
-      <Animated.Text style={[styles.letter, { transform: [{ scale: scaleAnim }] }]}>
-        {letter}
-      </Animated.Text>
-    </TouchableWithoutFeedback>
-  );
-
   return (
     <View style={styles.container_spl}>
-      <View style={styles.logo}>
-        {['T', 'i', 'k', 'o', 'c'].map(renderLetter)}
-      </View>
+      
+      <Image style={styles.logotipo} source={Logo} />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  logotipo:{
+
+  },
   container_spl: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'white',
+    backgroundColor:'white'
   },
-  logo: {
-    flexDirection: 'row',
-  },
-  letter: {
-    fontSize: 40,
+  text: {
+    fontSize: 24,
     fontWeight: 'bold',
-    fontFamily: 'Arial',
-    marginHorizontal: 2,
   },
 });
-
-export default SplashScreen;
-
-
