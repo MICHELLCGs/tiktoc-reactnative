@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet , Image } from 'react-native';
-import Logo from '../assets/Logo/Tiktoc.png'; // Ajusta la ruta según sea necesario
+import { View, StyleSheet } from 'react-native';
+import { WebView } from 'react-native-webview';
 
 const SplashScreen = ({ navigation }) => {
   useEffect(() => {
@@ -12,26 +12,27 @@ const SplashScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container_spl}>
-      
-      <Image style={styles.logotipo} source={Logo} />
+      <WebView
+        source={{ uri: 'file:///asset/LogoAnimation.html' }}
+        style={styles.webView}
+      />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  logotipo:{
-
-  },
   container_spl: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor:'white'
+    backgroundColor: 'white',
   },
-  text: {
-    fontSize: 24,
-    fontWeight: 'bold',
+  webView: {
+    width: 200, // Ajusta el tamaño según lo necesario
+    height: 200,
+    backgroundColor: 'transparent',
   },
 });
 
 export default SplashScreen;
+
