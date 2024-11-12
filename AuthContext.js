@@ -1,3 +1,5 @@
+// AuthContext.js
+
 import React, { createContext, useContext, useState } from 'react';
 
 const AuthContext = createContext();
@@ -5,7 +7,7 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
-  const [registeredUsers, setRegisteredUsers] = useState([]); // Para almacenar los usuarios registrados
+  const [registeredUsers, setRegisteredUsers] = useState([]);
 
   const login = ({ phone, email, password }) => {
     const registeredUser = registeredUsers.find(user => 
@@ -21,7 +23,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = (userData) => {
-    setRegisteredUsers(prev => [...prev, userData]); // Agregar nuevo usuario al registro
+    setRegisteredUsers(prev => [...prev, userData]);
     setUser(userData);
     setIsLoggedIn(true);
   };
@@ -31,8 +33,12 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const updateUserProfile = (updatedInfo) => {
+    setUser(prevUser => ({ ...prevUser, ...updatedInfo }));
+  };
+
   return (
-    <AuthContext.Provider value={{ isLoggedIn, user, login, register, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, user, login, register, logout, updateUserProfile }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Video } from 'expo-av';
-import { View, FlatList, SafeAreaView, Text, Dimensions, TouchableWithoutFeedback, StyleSheet, Alert } from 'react-native';
+import { View, FlatList, SafeAreaView, Text, Dimensions, TouchableWithoutFeedback, TouchableOpacity, StyleSheet, Alert, TextInput, Modal, Button } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import * as FileSystem from 'expo-file-system';
 
@@ -14,16 +14,17 @@ const HomeScreen = () => {
       user: 'Usuario 1',
       link: 'Link de la pelicula',
       Plataforma: 'Plataforma',
-      sinopsis: 'Sinopsis corta de la pelicula #pelicula_1 #pelicula_2'
+      sinopsis: 'Sinopsis corta de la pelicula #pelicula_1 #pelicula_2',
+      comments: []  // Aseguramos que la propiedad comments exista
     },
-    
     {
       _id: '2',
       videoUrl: 'https://videos.pexels.com/video-files/28792890/12478782_1080_1920_30fps.mp4',
       user: 'Usuario 3',
       link: 'Link de la pelicula',
       Plataforma: 'Plataforma',
-      sinopsis: 'Sinopsis corta de la pelicula #pelicula_1 #pelicula_2'
+      sinopsis: 'Sinopsis corta de la pelicula #pelicula_1 #pelicula_2',
+      comments: []  // Aseguramos que la propiedad comments exista
     },
     {
       _id: '3',
@@ -31,7 +32,8 @@ const HomeScreen = () => {
       user: 'Usuario 4',
       link: 'Link de la pelicula',
       Plataforma: 'Plataforma',
-      sinopsis: 'Sinopsis corta de la pelicula #pelicula_1 #pelicula_2'
+      sinopsis: 'Sinopsis corta de la pelicula #pelicula_1 #pelicula_2',
+      comments: []  // Aseguramos que la propiedad comments exista
     },
     {
       _id: '4',
@@ -39,41 +41,25 @@ const HomeScreen = () => {
       user: 'Usuario 5',
       link: 'Link de la pelicula',
       Plataforma: 'Plataforma',
-      sinopsis: 'Sinopsis corta de la pelicula #pelicula_1 #pelicula_2'
+      sinopsis: 'Sinopsis corta de la pelicula #pelicula_1 #pelicula_2',
+      comments: []  // Aseguramos que la propiedad comments exista
     },
   ]);
-  
+
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentComment, setCurrentComment] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);  // Para mostrar el modal de comentarios
+  const [selectedVideoIndex, setSelectedVideoIndex] = useState(null);  // Para saber qué video tiene los comentarios
   const videoRefs = useRef([]);
 
-  const cacheVideo = async (videoUrl) => {
-    try {
-      // Convierte la URL del video en una ruta de archivo única
-      // Usar solo el nombre del archivo para evitar problemas con la ruta
-      const fileName = videoUrl.split('/').pop(); // Obtiene solo el nombre del archivo
-      const fileUri = `${FileSystem.cacheDirectory}${fileName}`; // Construye la ruta del archivo
-  
-      // Verifica si el archivo ya existe en caché
-      const fileInfo = await FileSystem.getInfoAsync(fileUri);
-      if (!fileInfo.exists) {
-        console.log(`Video no está en caché, descargando: ${videoUrl}`);
-        await FileSystem.downloadAsync(videoUrl, fileUri);
-        console.log(`Video almacenado en caché: ${fileUri}`);
-      } else {
-        console.log(`Video ya está en caché: ${fileUri}`);
-      }
-    } catch (error) {
-      console.error(`Error al almacenar en caché el video ${videoUrl}:`, error);
-      Alert.alert('Error', `No se pudo almacenar en caché el video: ${error.message}`);
-    }
-  };
-
   useEffect(() => {
-    // Almacenar en caché todos los videos al cargar el componente
-    videos.forEach((video) => {
-      cacheVideo(video.videoUrl);
-    });
-  }, [videos]);
+    const videosWithLikes = videos.map(video => ({
+      ...video,
+      likes: video.likes || 0,
+      liked: video.liked || false
+    }));
+    setVideos(videosWithLikes);
+  }, []);
 
   const handleViewableItemsChanged = useRef(({ viewableItems }) => {
     if (viewableItems.length > 0) {
@@ -82,7 +68,7 @@ const HomeScreen = () => {
     }
   });
 
-  const handleVideoPress = async (index) => {
+  const handleVideoPress = useCallback(async (index) => {
     const video = videoRefs.current[index];
     if (video) {
       const status = await video.getStatusAsync();
@@ -92,7 +78,46 @@ const HomeScreen = () => {
         video.playAsync();
       }
     }
-  };
+  }, []);
+
+  const handleLike = useCallback((index) => {
+    setVideos((prevVideos) => {
+      const updatedVideos = [...prevVideos];
+      const updatedVideo = { ...updatedVideos[index] };
+      updatedVideo.liked = !updatedVideo.liked;
+      updatedVideo.likes = updatedVideo.liked ? updatedVideo.likes + 1 : updatedVideo.likes - 1;
+      updatedVideos[index] = updatedVideo;
+      return updatedVideos;
+    });
+  }, []);
+
+  const handleCommentPress = useCallback((index) => {
+    setSelectedVideoIndex(index);
+    setModalVisible(true);  // Mostrar el modal de comentarios
+  }, []);
+
+  const handleSubmitComment = useCallback(() => {
+    if (currentComment.trim() === '') {
+      Alert.alert('Error', 'Por favor, escribe un comentario válido.');
+      return;
+    }
+
+    const newComment = {
+      user: 'Usuario X',  // Aquí puedes agregar el nombre de usuario actual
+      text: currentComment
+    };
+
+    setVideos((prevVideos) => {
+      const updatedVideos = [...prevVideos];
+      const updatedVideo = { ...updatedVideos[selectedVideoIndex] };
+      updatedVideo.comments = [...updatedVideo.comments, newComment];
+      updatedVideos[selectedVideoIndex] = updatedVideo;
+      return updatedVideos;
+    });
+
+    setCurrentComment('');
+    setModalVisible(false);  // Cerrar el modal después de enviar el comentario
+  }, [currentComment, selectedVideoIndex]);
 
   const renderItem = ({ item, index }) => (
     <View style={styles.videoContainer}>
@@ -122,11 +147,24 @@ const HomeScreen = () => {
           <Text style={styles.subtitu}>{item.link}</Text>
         </View>
       </View>
+
+      {/* Botón de Like posicionado en la parte derecha superior */}
+      <View style={styles.rightContainer}>
+        <TouchableOpacity onPress={() => handleLike(index)} style={styles.likeButton}>
+          <Icon name={item.liked ? 'heart' : 'heart-o'} size={30} color={item.liked ? 'red' : 'white'} />
+          <Text style={styles.likeText}>{item.likes}</Text>
+        </TouchableOpacity>
+        {/* Botón de comentarios */}
+        <TouchableOpacity onPress={() => handleCommentPress(index)} style={styles.commentButton}>
+          <Icon name="comment-o" size={30} color="white" />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 
   return (
     <View style={styles.container}>
+      {/* Agregado al inicio */}
       <View style={styles.cabe}>
         <View style={styles.cabetop}>
           <View style={styles.moneda}>
@@ -153,10 +191,48 @@ const HomeScreen = () => {
         onViewableItemsChanged={handleViewableItemsChanged.current}
         viewabilityConfig={{ itemVisiblePercentThreshold: 50 }}
       />
+
+      {/* Modal para comentarios estilo TikTok */}
+      <Modal
+        animationType="none"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
+          <View style={styles.modalBackground}>
+            <TouchableWithoutFeedback>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Comentarios</Text>
+                {/* Lista de comentarios */}
+                <FlatList
+                  data={videos[selectedVideoIndex]?.comments || []}
+                  renderItem={({ item, index }) => (
+                    <View key={index} style={styles.commentItem}>
+                      <Text style={styles.commentUser}>{item.user}:</Text>
+                      <Text style={styles.commentText}>{item.text}</Text>
+                    </View>
+                  )}
+                  keyExtractor={(item, index) => index.toString()}
+                />
+                <TextInput
+                  style={styles.commentInput}
+                  placeholder="Escribe un comentario..."
+                  placeholderTextColor="gray"
+                  value={currentComment}
+                  onChangeText={setCurrentComment}
+                />
+                <TouchableOpacity style={styles.sendButton} onPress={handleSubmitComment}>
+                  <Text style={styles.sendButtonText}>Enviar Comentario</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </View>
   );
 };
-
 
 const styles = StyleSheet.create({
   moneda:{
@@ -305,9 +381,83 @@ const styles = StyleSheet.create({
   //login
   navigation:{
     backgroundColor:'orange'
-  }
+  },
 
-,
+  rightContainer: {
+    position: 'absolute',
+    right: 20,
+    top: '50%',
+    transform: [{ translateY: -50 }],
+    justifyContent: 'space-between',
+    height: 200,
+  },
+  likeButton: {
+    alignItems: 'center',
+  },
+  likeText: {
+    color: 'white',
+    marginTop: 5,
+  },
+  commentButton: {
+    alignItems: 'center',
+    position: 'absolute', // Mantener el botón de comentarios posicionado de forma absoluta
+    top: 70, // Ajustamos para que quede justo abajo del like
+  },
+  commentText: {
+    color: 'white',
+    marginTop: 5,
+  },
+
+  /* Estilos para el Modal */
+  modalBackground: {
+    flex: 1,
+    justifyContent: 'flex-end', // Para que el modal aparezca en la parte inferior
+    backgroundColor: 'rgba(0, 0, 0, 0.4)', // Fondo claro con opacidad
+  },
+  modalContent: {
+    backgroundColor: '#fff', // Fondo blanco para modo claro
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    height: '50%',
+  },
+  modalTitle: {
+    color: '#000', // Texto oscuro para modo claro
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  commentItem: {
+    flexDirection: 'row',
+    marginBottom: 10,
+  },
+  commentUser: {
+    color: '#000', // Texto del usuario en color oscuro
+    fontWeight: 'bold',
+  },
+  commentText: {
+    color: '#333', // Texto de comentario en gris oscuro
+  },
+  commentInput: {
+    backgroundColor: '#f0f0f0', // Fondo claro para el input
+    color: '#000', // Texto oscuro en el input
+    padding: 10,
+    borderRadius: 20,
+    marginBottom: 10,
+    marginTop: 10,
+    height: 50,
+  },
+  sendButton: {
+    backgroundColor: '#FF4500', // Color característico de TikTok
+    paddingVertical: 10,
+    borderRadius: 20,
+    alignItems: 'center',
+  },
+  sendButtonText: {
+    color: '#fff', // Texto blanco en el botón de envío
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
 });
 
 export default HomeScreen;
