@@ -5,12 +5,8 @@ import CakeImage from '../../assets/img/cake.png';
 
 const ValidNacimiento = ({ navigation }) => {
   const [birthDate, setBirthDate] = useState('');
-  const { register } = useAuth();
 
-  const handleRegister = () => {
-    register({ birthDate });
-    navigation.navigate('Register');
-  };
+
 
 
   const isValidDate = (date) => {
@@ -33,8 +29,8 @@ const ValidNacimiento = ({ navigation }) => {
           onChangeText={setBirthDate}
         />
         <TouchableOpacity
-          style={[styles.botonsiguiente, !isValidDate(birthDate) && styles.disabledButton]} // Deshabilita el botón si la fecha no es válida
-          onPress={handleRegister}
+          style={[styles.botonsiguiente, !isValidDate(birthDate) && styles.disabledButton]}
+          onPress={() => navigation.navigate('Register')}
           disabled={!isValidDate(birthDate)}
         >
           <Text style={styles.buttonText}>Siguiente</Text>

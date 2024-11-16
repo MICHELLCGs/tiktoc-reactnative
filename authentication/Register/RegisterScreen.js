@@ -75,11 +75,11 @@ const RegisterScreen = ({ navigation }) => {
         </View>
 
         <View style={styles.boton_home_login}>
-          <TouchableOpacity
-            style={[styles.registerButton, isFormComplete ? styles.activeButton : styles.inactiveButton]}
-            onPress={handleRegister}
-            disabled={!isFormComplete}
-          >
+        <TouchableOpacity
+          style={[styles.registerButton, isFormComplete ? styles.activeButton : styles.inactiveButton]}
+          onPress={handleRegister}
+          disabled={!isFormComplete}
+        >
             <Text style={styles.registerButtonText}>Siguiente</Text>
           </TouchableOpacity>
         </View>

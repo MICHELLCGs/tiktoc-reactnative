@@ -1,35 +1,37 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Para React Native
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isVerified, setIsVerified] = useState(false); // Añadir estado de verificación
+  const [isVerified, setIsVerified] = useState(false);
   const [user, setUser] = useState(null);
   const [registeredUsers, setRegisteredUsers] = useState([]);
 
-  // Cargar los usuarios registrados de AsyncStorage al inicio
+  // Cargar los usuarios registrados y el estado de verificación al inicio
   useEffect(() => {
-    const loadRegisteredUsers = async () => {
+    const loadData = async () => {
       const users = await AsyncStorage.getItem('registeredUsers');
-      if (users) {
-        setRegisteredUsers(JSON.parse(users));
-      }
+      const verified = await AsyncStorage.getItem('isVerified');
+      if (users) setRegisteredUsers(JSON.parse(users));
+      setIsVerified(verified === 'true');
     };
-    loadRegisteredUsers();
+    loadData();
   }, []);
 
   // Función de login
   const login = ({ phone, email, password }) => {
-    const registeredUser = registeredUsers.find(user => 
-      (user.phone === phone || user.email === email) && user.password === password
+    const registeredUser = registeredUsers.find(
+      (user) =>
+        (user.phone === phone || user.email === email) &&
+        user.password === password
     );
 
     if (registeredUser) {
       setUser(registeredUser);
       setIsLoggedIn(true);
-      setIsVerified(registeredUser.isVerified); // Se asume que el usuario tiene un campo de verificación
+      setIsVerified(registeredUser.isVerified || false);
     } else {
       alert('Credenciales inválidas');
     }
@@ -37,36 +39,67 @@ export const AuthProvider = ({ children }) => {
 
   // Función de registro
   const register = async (userData) => {
-    setRegisteredUsers(prev => {
-      const newUsers = [...prev, userData];
-      AsyncStorage.setItem('registeredUsers', JSON.stringify(newUsers)); // Guarda los usuarios en AsyncStorage
-      return newUsers;
-    });
+    const newUsers = [...registeredUsers, { ...userData, isVerified: false }];
+    setRegisteredUsers(newUsers);
     setUser(userData);
     setIsLoggedIn(true);
-    setIsVerified(userData.isVerified); // Se asume que el usuario tiene un campo de verificación
+    setIsVerified(false); // El usuario registrado aún no está verificado
+    await AsyncStorage.setItem('registeredUsers', JSON.stringify(newUsers));
+  };
+
+  // Función para validar el código de verificación
+  const validateCode = async (code) => {
+    const expectedCode = '1234'; // Código de verificación esperado
+    if (code === expectedCode) {
+      setIsVerified(true);
+      await AsyncStorage.setItem('isVerified', 'true');
+    } else {
+      alert('Código incorrecto');
+    }
   };
 
   // Función de logout
-  const logout = () => {
+  const logout = async () => {
     setIsLoggedIn(false);
     setUser(null);
-    setIsVerified(false); // Al hacer logout, también se resetearía el estado de verificación
+    setIsVerified(false);
+    await AsyncStorage.removeItem('isVerified'); // Eliminar estado de verificación al salir
   };
 
   // Función para actualizar el perfil del usuario
   const updateUserProfile = (updatedInfo) => {
-    setUser(prevUser => {
+    setUser((prevUser) => {
       const updatedUser = { ...prevUser, ...updatedInfo };
-      AsyncStorage.setItem('registeredUsers', JSON.stringify(
-        registeredUsers.map(u => (u.phone === updatedUser.phone ? updatedUser : u))
-      ));
+      setRegisteredUsers((prevUsers) =>
+        prevUsers.map((u) =>
+          u.phone === updatedUser.phone ? updatedUser : u
+        )
+      );
+      AsyncStorage.setItem(
+        'registeredUsers',
+        JSON.stringify(
+          registeredUsers.map((u) =>
+            u.phone === updatedUser.phone ? updatedUser : u
+          )
+        )
+      );
       return updatedUser;
     });
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, isVerified, user, login, register, logout, updateUserProfile }}>
+    <AuthContext.Provider
+      value={{
+        isLoggedIn,
+        isVerified,
+        user,
+        login,
+        register,
+        logout,
+        updateUserProfile,
+        validateCode,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
