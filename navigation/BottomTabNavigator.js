@@ -3,8 +3,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from '../screens/HomeScreen';
 import SearchScreen from '../screens/SearchScreen';
 import ProfileScreen from '../screens/ProfileScreen';
-import LoginScreen from '../authentication/LoginScreen'; // Asegúrate de importar el LoginScreen
-import { useAuth } from '../AuthContext';
+import LoginScreen from '../authentication/Login/LoginScreen'; 
+import { useAuth } from '../authentication/AuthContext';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 const Tab = createBottomTabNavigator();

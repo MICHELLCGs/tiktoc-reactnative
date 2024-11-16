@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, Alert, TouchableOpacity, Image } from 'react-native';
-import { useAuth } from '../AuthContext';
+import { useAuth } from '../authentication/AuthContext';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 const EditProfileScreen = ({ navigation }) => {
