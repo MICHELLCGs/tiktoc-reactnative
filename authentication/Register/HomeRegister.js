@@ -7,7 +7,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 // Función para cargar las fuentes
 
 
-const HomeLogin = ({ navigation }) => {
+const HomeRegister = ({ navigation }) => {
    // Cargar las fuentes directamente en useFonts
  
 
@@ -29,11 +29,11 @@ const HomeLogin = ({ navigation }) => {
         <View style={styles.container}>
             
             <View style={styles.tituloconte} >
-                <Text style={styles.prueba}>Inicio de sesión en Tiktoc</Text>
+                <Text style={styles.prueba}>Registrate en Tiktoc</Text>
             </View>
 
             <View style={styles.boton_home_login}>
-                <TouchableOpacity style={styles.boton_home} onPress={() => navigation.navigate('Login')}>
+                <TouchableOpacity style={styles.boton_home} onPress={() => navigation.navigate('CumpleValid')}>
                     
                     <Icon name="user" size={20} color="black" style={styles.icon} />
                     <Text style={styles.buttonText}>Use phone or email</Text>
@@ -48,15 +48,15 @@ const HomeLogin = ({ navigation }) => {
             </View>   
                 
             <View style={styles.terminos}>
-                <Text style={styles.terminos_int}>Al continuar, aceptas nuestros Términos de Servicio y reconoces que has leído nuestra Política de Privacidad para saber cómo recopilamos, usamos y compartimos tus datos, y nuestra </Text>
+                <Text style={styles.terminos_int}>Al continuar, aceptas nuestros <Text style={{color: 'rgba(0, 0, 0, 0.8)'}}>Términos de Servicio</Text> y reconoces que has leído nuestra <Text style={{color: 'rgba(0, 0, 0, 0.8)'}}>Política de Privacidad</Text> para saber cómo recopilamos, usamos y compartimos tus datos, y nuestra </Text>
                 <Text style={styles.terminos_int}>Política de Cookies para saber cómo usamos las cookies.</Text>
             </View>
                 
                 
             <View style={styles.bottomButtonContainer}>
-                <TouchableOpacity style={styles.Registro_boton} onPress={() => navigation.navigate('CumpleValid')}>
-                    <Text style={styles.registerText}>No tienes una cuenta?</Text>
-                    <Text style={[styles.registerText,{color:'FF4500'}]}>Registrate</Text>
+                <TouchableOpacity style={styles.Registro_boton} onPress={() => navigation.navigate('HomeLogin')}>
+                    <Text style={styles.registerText}>¿Ya te  tienes una cuenta?</Text>
+                    <Text style={[styles.registerText,{color:'#FF4500'}]}>Iniciar Sesión</Text>
                 </TouchableOpacity>
             </View>
                     
@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     terminos_int:{
         width:'85%',
         textAlign:'justify',
-        backgroundColor:'transparent',
+        color: 'rgba(0, 0, 0, 0.4)',
         marginTop:5,
         fontSize:15
     },
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     boton_home:{
         display:'flex',
         flexDirection:'row',
-        borderRadius: 10,
+        borderRadius: 4,
         borderColor: 'black',
         borderWidth: 1,
         gap:55,
@@ -130,15 +130,13 @@ const styles = StyleSheet.create({
 
     },
     safe:{ 
-        backgroundColor: 'transparent',paddingTop: 80, height:'100%' 
+        backgroundColor: '#fff',paddingTop: 80, height:'100%' 
     },
     prueba:{
         backgroundColor:'transparent',
         fontSize:40,
         width:'80%',
         fontWeight:'500'
-        
-
     },
     tituloconte:{
         top:'5%',
@@ -150,4 +148,4 @@ const styles = StyleSheet.create({
     }
 });
 
-export default HomeLogin;
+export default HomeRegister;

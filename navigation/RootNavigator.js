@@ -7,12 +7,14 @@ import Pruebas from '../stackscreens/Buscar';
 import ProfileScreen from '../screens/ProfileScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
 
-import LoginScreen from '../authentication/LoginScreen';
-import { useAuth } from '../AuthContext';
+import LoginScreen from '../authentication/Login/LoginScreen';
+import { useAuth } from '../authentication/AuthContext';
 
-import RegisterScreen from '../authentication/RegisterScreen';
-import HomeLogin from '../authentication/HomeLogin';
-import ValidCumple from '../authentication/ValidNacimiento';
+import RegisterScreen from '../authentication/Register/RegisterScreen';
+import HomeLogin from '../authentication/Login/HomeLogin';
+import HomeRegister from '../authentication/Register/HomeRegister';
+import ValidCumple from '../authentication/Register/ValidNacimiento';
+import ValidationScreen from '../authentication/ValidationScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -26,15 +28,19 @@ const RootNavigator = () => {
       <Stack.Screen name="Editar Perfil" component={EditProfileScreen} />
 
       <Stack.Screen name="Details" component={DetailsScreen} options={{ headerTransparent: true, headerTitle: '', headerBackTitle: 'Back' }} />
-      <Stack.Screen name="Register" component={RegisterScreen} options={{ headerTransparent: true, headerTitle: '', headerBackTitle: 'Back' }} />
+
 
       {isLoggedIn ? (
         <Stack.Screen name="Profile" component={ProfileScreen} options={{ headerTransparent: true, headerTitle: '', headerBackTitle: 'Back' }} />
       ) : (
         <>
-          <Stack.Screen name="LoginHome" component={HomeLogin} options={{ headerTransparent: true, headerTitle: '', headerBackTitle: 'Back' }} />
+          <Stack.Screen name="HomeRegister" component={HomeRegister} options={{ headerTransparent: true, headerTitle: '', headerBackTitle: 'Back' }} />
+          <Stack.Screen name="HomeLogin" component={HomeLogin} options={{ headerTransparent: true, headerTitle: '', headerBackTitle: 'Back' }} />
           <Stack.Screen name="CumpleValid" component={ValidCumple} options={{ headerTransparent: true, headerTitle: '', headerBackTitle: 'Back' }} />
+          <Stack.Screen name="Register" component={RegisterScreen} options={{ headerTransparent: true, headerTitle: '', headerBackTitle: 'Back' }} />
           <Stack.Screen name="Login" component={LoginScreen} options={{ headerTransparent: true, headerTitle: '', headerBackTitle: 'Back' }} />
+          <Stack.Screen name="Validation" component={ValidationScreen} options={{ headerTransparent: true, headerTitle: '', headerBackTitle: 'Back' }} />
+
         </>
       )}
     </Stack.Navigator>

@@ -1,32 +1,32 @@
 import React, { useState } from 'react';
 import { View, Text, Button, StyleSheet, TouchableOpacity, Image, Alert } from 'react-native';
-import { useAuth } from '../AuthContext';
+import { useAuth } from '../authentication/AuthContext';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { launchImageLibrary } from 'react-native-image-picker';
 
 const ProfileScreen = ({ navigation }) => {
   const { isLoggedIn, user, logout } = useAuth();
-  const [profileImage, setProfileImage] = useState(null); // Estado para la imagen de perfil
-  const [isMenuOpen, setIsMenuOpen] = useState(false); // Estado para mostrar el menú de opciones
+  const [profileImage, setProfileImage] = useState(null); 
+  const [isMenuOpen, setIsMenuOpen] = useState(false); 
 
   const handleImagePick = () => {
     launchImageLibrary({ mediaType: 'photo', quality: 1 }, (response) => {
       if (response.assets) {
-        setProfileImage(response.assets[0].uri); // Establece la URI de la imagen seleccionada
+        setProfileImage(response.assets[0].uri); 
       }
     });
   };
   
   const handleMenuToggle = () => {
-    setIsMenuOpen(!isMenuOpen); // Alterna la visibilidad del menú de opciones
+    setIsMenuOpen(!isMenuOpen); 
   };
 
   const handleLogout = () => {
-    logout(); // No necesitamos navegar a ninguna pantalla específica
+    logout(); 
   };
 
   const handleEditProfile = () => {
-    navigation.navigate('Editar Perfil'); // Navega a la pantalla EditProfile
+    navigation.navigate('Editar Perfil'); 
   };
 
   return (
@@ -98,10 +98,10 @@ const ProfileScreen = ({ navigation }) => {
       ) : (
         <>
           <View style={styles.homelogin_s}>
-            <Text style={{fontSize:20,width:'80%',textAlign:'center'}}>Debe iniciar sesión para ver su perfil.</Text>
-            <TouchableOpacity style={styles.boton_home} onPress={() => navigation.navigate('LoginHome')}>
+            <Text style={{fontSize:20,width:'80%',textAlign:'center'}}>Debe registrarse para poder acceder a más funciones</Text>
+            <TouchableOpacity style={styles.boton_home} onPress={() => navigation.navigate('HomeRegister')}>
               <Icon name="user" size={20} color="black" style={styles.icon} />
-              <Text style={styles.buttonTexts}>Iniciar sesión</Text>
+              <Text style={styles.buttonTexts}>Registrarse</Text>
             </TouchableOpacity>
           </View>
         </>
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'flex-start',
-    backgroundColor: 'transparent',
+    backgroundColor: '#fff',
   },
   topBar: {
     flexDirection: 'row',
@@ -141,11 +141,11 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     borderWidth: 3,
     borderColor: '#FF4500',
-    marginTop: 120, // Alineación con los otros elementos
+    marginTop: 120, 
   },
   userName: {
     fontSize: 20,
-    marginTop: 20, // Ajusta para que no esté pegado a la imagen
+    marginTop: 20, 
     textAlign: 'center',
   },
   level: {
@@ -180,10 +180,10 @@ const styles = StyleSheet.create({
   homelogin_s: {
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center', // Centramos verticalmente
+    justifyContent: 'center', 
     backgroundColor: 'transparent',
     width: '100%',
-    flex: 1, // Asegura que ocupe todo el espacio disponible
+    flex: 1, 
   },
   loginText: {
     fontSize: 20,
