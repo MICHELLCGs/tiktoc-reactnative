@@ -20,6 +20,7 @@ const ValidationScreen = ({ navigation }) => {
         placeholder="Código"
         value={code}
         onChangeText={setCode}
+        keyboardType="numeric"
       />
       <TouchableOpacity style={styles.button} onPress={() => validateCode(code)}>
         <Text style={styles.buttonText}>Validar</Text>
@@ -27,5 +28,42 @@ const ValidationScreen = ({ navigation }) => {
     </View>
   );
 };
+
+// Definición de estilos
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 20,
+    backgroundColor: '#fff',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 20,
+    color: '#333',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 20,
+    fontSize: 16,
+    backgroundColor: '#f9f9f9',
+  },
+  button: {
+    backgroundColor: '#FF4500',
+    padding: 15,
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+});
 
 export default ValidationScreen;

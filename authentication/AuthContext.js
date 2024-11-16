@@ -39,22 +39,30 @@ export const AuthProvider = ({ children }) => {
 
   // Función de registro
   const register = async (userData) => {
-    const newUsers = [...registeredUsers, { ...userData, isVerified: false }];
-    setRegisteredUsers(newUsers);
-    setUser(userData);
-    setIsLoggedIn(true);
-    setIsVerified(false); // El usuario registrado aún no está verificado
-    await AsyncStorage.setItem('registeredUsers', JSON.stringify(newUsers));
+    try {
+      const newUsers = [...registeredUsers, { ...userData, isVerified: false }];
+      setRegisteredUsers(newUsers);
+      setUser(userData);
+      setIsLoggedIn(true);
+      setIsVerified(false); // El usuario registrado aún no está verificado
+      await AsyncStorage.setItem('registeredUsers', JSON.stringify(newUsers));
+    } catch (error) {
+      console.error("Error during registration:", error);
+    }
   };
 
   // Función para validar el código de verificación
   const validateCode = async (code) => {
-    const expectedCode = '1234'; // Código de verificación esperado
-    if (code === expectedCode) {
-      setIsVerified(true);
-      await AsyncStorage.setItem('isVerified', 'true');
-    } else {
-      alert('Código incorrecto');
+    try {
+      const expectedCode = '1234'; // Código de verificación esperado
+      if (code === expectedCode) {
+        setIsVerified(true);
+        await AsyncStorage.setItem('isVerified', 'true');
+      } else {
+        alert('Código incorrecto');
+      }
+    } catch (error) {
+      console.error("Error during code validation:", error);
     }
   };
 

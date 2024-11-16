@@ -20,12 +20,16 @@ const RegisterScreen = ({ navigation }) => {
     );
   }, [username, email, password, phone]);
 
-  const handleRegister = () => {
-    if (isFormComplete) {
-      register({ username, email, phone, password });
-      navigation.navigate('Validation');
-    } else {
-      alert('Por favor, completa todos los campos.');
+  const handleRegister = async () => {
+    try {
+      if (isFormComplete) {
+        await register({ username, email, phone, password });
+        navigation.navigate('Validation');
+      } else {
+        alert('Por favor, completa todos los campos.');
+      }
+    } catch (error) {
+      console.error("Error during registration:", error);
     }
   };
 
