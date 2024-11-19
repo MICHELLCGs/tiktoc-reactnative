@@ -54,7 +54,7 @@ const HomeRegister = ({ navigation }) => {
                 
                 
             <View style={styles.bottomButtonContainer}>
-                <TouchableOpacity style={styles.Registro_boton} onPress={() => navigation.navigate('HomeLogin')}>
+                <TouchableOpacity style={styles.Registro_boton} onPress={() => navigation.navigate('Login')}>
                     <Text style={styles.registerText}>¿Ya te  tienes una cuenta?</Text>
                     <Text style={[styles.registerText,{color:'#FF4500'}]}>Iniciar Sesión</Text>
                 </TouchableOpacity>

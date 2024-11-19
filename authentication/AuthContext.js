@@ -1,108 +1,211 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
-  const [user, setUser] = useState(null);
   const [registeredUsers, setRegisteredUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Cargar los usuarios registrados y el estado de verificación al inicio
+  // Cargar estado inicial al montar el componente
   useEffect(() => {
-    const loadData = async () => {
-      const users = await AsyncStorage.getItem('registeredUsers');
-      const verified = await AsyncStorage.getItem('isVerified');
-      if (users) setRegisteredUsers(JSON.parse(users));
-      setIsVerified(verified === 'true');
-    };
-    loadData();
+    loadInitialState();
   }, []);
 
-  // Función de login
-  const login = ({ phone, email, password }) => {
-    const registeredUser = registeredUsers.find(
-      (user) =>
-        (user.phone === phone || user.email === email) &&
-        user.password === password
-    );
+  const loadInitialState = async () => {
+    try {
+      const [storedUsers, storedUser, verificationStatus] = await Promise.all([
+        AsyncStorage.getItem('registeredUsers'),
+        AsyncStorage.getItem('currentUser'),
+        AsyncStorage.getItem('isVerified')
+      ]);
 
-    if (registeredUser) {
-      setUser(registeredUser);
-      setIsLoggedIn(true);
-      setIsVerified(registeredUser.isVerified || false);
-    } else {
-      alert('Credenciales inválidas');
+      if (storedUsers) {
+        setRegisteredUsers(JSON.parse(storedUsers));
+      }
+
+      if (storedUser) {
+        const userData = JSON.parse(storedUser);
+        setUser(userData);
+        setIsLoggedIn(true);
+        setIsVerified(verificationStatus === 'true');
+      }
+    } catch (error) {
+      console.error('Error loading initial state:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Función de registro
+  // Registro de usuario
   const register = async (userData) => {
-    const newUsers = [...registeredUsers, { ...userData, isVerified: false }];
-    setRegisteredUsers(newUsers);
-    setUser(userData);
-    setIsLoggedIn(true);
-    setIsVerified(false); // El usuario registrado aún no está verificado
-    await AsyncStorage.setItem('registeredUsers', JSON.stringify(newUsers));
-  };
+    try {
+      // Verificar si el usuario ya existe
+      const userExists = registeredUsers.some(
+        user => user.email === userData.email || user.phone === userData.phone
+      );
 
-  // Función para validar el código de verificación
-  const validateCode = async (code) => {
-    const expectedCode = '1234'; // Código de verificación esperado
-    if (code === expectedCode) {
-      setIsVerified(true);
-      await AsyncStorage.setItem('isVerified', 'true');
-    } else {
-      alert('Código incorrecto');
+      if (userExists) {
+        throw new Error('El usuario ya existe');
+      }
+
+      const newUser = { 
+        ...userData, 
+        isVerified: false,
+        id: Date.now().toString(), // Generamos un ID único
+        createdAt: new Date().toISOString()
+      };
+
+      const updatedUsers = [...registeredUsers, newUser];
+      
+      // Actualizar estado y AsyncStorage
+      await Promise.all([
+        AsyncStorage.setItem('registeredUsers', JSON.stringify(updatedUsers)),
+        AsyncStorage.setItem('currentUser', JSON.stringify(newUser))
+      ]);
+
+      setRegisteredUsers(updatedUsers);
+      setUser(newUser);
+      setIsLoggedIn(true);
+      setIsVerified(false);
+
+      return true;
+    } catch (error) {
+      console.error('Error en registro:', error);
+      throw error;
     }
   };
 
-  // Función de logout
-  const logout = async () => {
-    setIsLoggedIn(false);
-    setUser(null);
-    setIsVerified(false);
-    await AsyncStorage.removeItem('isVerified'); // Eliminar estado de verificación al salir
+  // Inicio de sesión
+  const login = async (credentials) => {
+    try {
+      const matchedUser = registeredUsers.find(
+        user => (user.email === credentials.email || user.phone === credentials.phone) 
+              && user.password === credentials.password
+      );
+
+      if (!matchedUser) {
+        throw new Error('Credenciales inválidas');
+      }
+
+      // Actualizar estado y AsyncStorage
+      await AsyncStorage.setItem('currentUser', JSON.stringify(matchedUser));
+      setUser(matchedUser);
+      setIsLoggedIn(true);
+      setIsVerified(matchedUser.isVerified);
+
+      return matchedUser;
+    } catch (error) {
+      console.error('Error en login:', error);
+      throw error;
+    }
   };
 
-  // Función para actualizar el perfil del usuario
-  const updateUserProfile = (updatedInfo) => {
-    setUser((prevUser) => {
-      const updatedUser = { ...prevUser, ...updatedInfo };
-      setRegisteredUsers((prevUsers) =>
-        prevUsers.map((u) =>
-          u.phone === updatedUser.phone ? updatedUser : u
-        )
+  // Validación de código
+  const validateCode = async (code) => {
+    try {
+      const expectedCode = '1234'; // En producción, esto debería ser generado y enviado al usuario
+
+      if (code !== expectedCode) {
+        throw new Error('Código incorrecto');
+      }
+
+      // Actualizar usuario verificado
+      const updatedUser = { ...user, isVerified: true };
+      const updatedUsers = registeredUsers.map(u => 
+        u.id === user.id ? updatedUser : u
       );
-      AsyncStorage.setItem(
-        'registeredUsers',
-        JSON.stringify(
-          registeredUsers.map((u) =>
-            u.phone === updatedUser.phone ? updatedUser : u
-          )
-        )
+
+      // Actualizar estado y AsyncStorage
+      await Promise.all([
+        AsyncStorage.setItem('isVerified', 'true'),
+        AsyncStorage.setItem('currentUser', JSON.stringify(updatedUser)),
+        AsyncStorage.setItem('registeredUsers', JSON.stringify(updatedUsers))
+      ]);
+
+      setUser(updatedUser);
+      setIsVerified(true);
+      setRegisteredUsers(updatedUsers);
+
+      return true;
+    } catch (error) {
+      console.error('Error en validación:', error);
+      throw error;
+    }
+  };
+
+  // Cerrar sesión
+  const logout = async () => {
+    try {
+      // Limpiar AsyncStorage y estado
+      await Promise.all([
+        AsyncStorage.removeItem('currentUser'),
+        AsyncStorage.removeItem('isVerified')
+      ]);
+
+      setUser(null);
+      setIsLoggedIn(false);
+      setIsVerified(false);
+
+      return true;
+    } catch (error) {
+      console.error('Error en logout:', error);
+      throw error;
+    }
+  };
+
+  // Actualizar perfil de usuario
+  const updateUserProfile = async (updatedData) => {
+    try {
+      const updatedUser = { ...user, ...updatedData };
+      const updatedUsers = registeredUsers.map(u => 
+        u.id === user.id ? updatedUser : u
       );
-      return updatedUser;
-    });
+
+      // Actualizar estado y AsyncStorage
+      await Promise.all([
+        AsyncStorage.setItem('currentUser', JSON.stringify(updatedUser)),
+        AsyncStorage.setItem('registeredUsers', JSON.stringify(updatedUsers))
+      ]);
+
+      setUser(updatedUser);
+      setRegisteredUsers(updatedUsers);
+
+      return true;
+    } catch (error) {
+      console.error('Error actualizando perfil:', error);
+      throw error;
+    }
+  };
+
+  const contextValue = {
+    user,
+    isLoggedIn,
+    isVerified,
+    loading,
+    register,
+    login,
+    logout,
+    validateCode,
+    updateUserProfile
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        isLoggedIn,
-        isVerified,
-        user,
-        login,
-        register,
-        logout,
-        updateUserProfile,
-        validateCode,
-      }}
-    >
-      {children}
+    <AuthContext.Provider value={contextValue}>
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth debe ser usado dentro de un AuthProvider');
+  }
+  return context;
+};
+
+export default AuthContext;

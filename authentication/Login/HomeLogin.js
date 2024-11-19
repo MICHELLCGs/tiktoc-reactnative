@@ -33,7 +33,7 @@ const HomeLogin = ({ navigation }) => {
             </View>
 
             <View style={styles.boton_home_login}>
-                <TouchableOpacity style={styles.boton_home} onPress={() => navigation.navigate('Login')}>
+                <TouchableOpacity style={styles.boton_home} onPress={() => navigation.navigate('HomeLogin')}>
                     
                     <Icon name="user" size={20} color="black" style={styles.icon} />
                     <Text style={styles.buttonText}>Use phone or email</Text>

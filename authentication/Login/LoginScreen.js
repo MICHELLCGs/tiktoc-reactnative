@@ -1,147 +1,280 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView
+} from 'react-native';
 import { useAuth } from '../AuthContext';
 
 const LoginScreen = ({ navigation }) => {
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const { login, registeredUser } = useAuth();
+  // Estados para los campos del formulario
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    phone: ''
+  });
 
-  const handleLogin = () => {
-    // Aquí debes validar la información de inicio de sesión
-    const user = { phone, email, password }; // Datos de inicio de sesión
+  // Estados para el manejo de errores y carga
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
 
-    if (validateUser(user)) { // Valida el usuario registrado (implementa esta función)
-      login(user);
-      navigation.navigate('Perfil'); // Redirige a la pantalla de perfil
-    } else {
-      alert('Teléfono, correo o contraseña incorrectos.'); // Mensaje de error si el usuario no coincide
+  // Obtener la función login del contexto de autenticación
+  const { login } = useAuth();
+
+  // Validar el formulario
+  const validateForm = () => {
+    const newErrors = {};
+
+    // Validar email
+    // Validar email o teléfono
+if (!formData.email && !formData.phone) {
+  newErrors.credentials = 'Ingresa un correo o teléfono';
+}
+
+
+    // Validar teléfono
+    if (formData.phone && !/^[0-9]{9}$/.test(formData.phone)) {
+      newErrors.phone = 'El teléfono debe tener 9 dígitos';
+    }
+
+    // Validar contraseña
+    if (!formData.password) {
+      newErrors.password = 'La contraseña es requerida';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'La contraseña debe tener al menos 6 caracteres';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Manejar cambios en los inputs
+  const handleChange = (name, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    // Limpiar error del campo cuando el usuario empieza a escribir
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: null
+      }));
     }
   };
 
-  const validateUser = ({ phone, email, password }) => {
-    // Aquí debes implementar la lógica para verificar el teléfono, correo y contraseña del usuario
-    // Ejemplo: comparar con los datos almacenados en tu AuthContext o una base de datos
-    return true; // Cambia esto según tu lógica de validación
+  // Manejar el envío del formulario
+  const handleLogin = async () => {
+    try {
+      if (!validateForm()) return;
+
+      setIsLoading(true);
+      const user = await login(formData);
+      
+      if (user) {
+        navigation.navigate('Validation');
+      }
+    } catch (error) {
+      Alert.alert(
+        'Error de inicio de sesión',
+        error.message || 'Credenciales incorrectas'
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Renderizar el error
+  const renderError = (fieldName) => {
+    if (errors[fieldName]) {
+      return <Text style={styles.errorText}>{errors[fieldName]}</Text>;
+    }
+    return null;
   };
 
   return (
-    <View style={styles.safe}>
-    <View style={styles.container}>
-      <Text style={styles.title}>Iniciar Sesión</Text>
-      <View style={styles.inputContainer}>
-      <Text style={styles.subtitulo} >Correo</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Correo"
-          value={email}
-          onChangeText={setEmail}
-        />
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+    >
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <View style={styles.formContainer}>
+          <Text style={styles.title}>Iniciar Sesión</Text>
 
-         <Text style={styles.subtitulo} >Contraseña</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Contraseña"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
-        
-        <Text style={styles.subtitulo}>Teléfono</Text>
-        <View style={styles.phoneContainer}>
-          <Text style={styles.phonePrefix}>+51</Text>
-          <TextInput
-            style={styles.phoneInput}
-            placeholder="Número de teléfono"
-            value={phone}
-            onChangeText={setPhone}
-            keyboardType="numeric"
-            maxLength={9}
-          />
+          {/* Campo de correo */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Correo</Text>
+            <TextInput
+              style={[styles.input, errors.email && styles.inputError]}
+              placeholder="Correo electrónico"
+              value={formData.email}
+              onChangeText={(text) => handleChange('email', text)}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              editable={!isLoading}
+            />
+            {renderError('email')}
+          </View>
+
+          {/* Campo de contraseña */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Contraseña</Text>
+            <TextInput
+              style={[styles.input, errors.password && styles.inputError]}
+              placeholder="Contraseña"
+              value={formData.password}
+              onChangeText={(text) => handleChange('password', text)}
+              secureTextEntry
+              editable={!isLoading}
+            />
+            {renderError('password')}
+          </View>
+
+          {/* Campo de teléfono */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Teléfono</Text>
+            <View style={styles.phoneContainer}>
+              <Text style={styles.phonePrefix}>+51</Text>
+              <TextInput
+                style={[
+                  styles.phoneInput,
+                  errors.phone && styles.inputError
+                ]}
+                placeholder="Número de teléfono"
+                value={formData.phone}
+                onChangeText={(text) => handleChange('phone', text)}
+                keyboardType="numeric"
+                maxLength={9}
+                editable={!isLoading}
+              />
+            </View>
+            {renderError('phone')}
+          </View>
+
+          {/* Botón de inicio de sesión */}
+          <TouchableOpacity
+            style={[
+              styles.loginButton,
+              isLoading && styles.loginButtonDisabled
+            ]}
+            onPress={handleLogin}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.loginButtonText}>Iniciar Sesión</Text>
+            )}
+          </TouchableOpacity>
+
+          {/* Link para registro */}
+          <TouchableOpacity
+            style={styles.registerLink}
+            onPress={() => navigation.navigate('Register')}
+            disabled={isLoading}
+          >
+            <Text style={styles.registerLinkText}>
+              ¿No tienes cuenta? Regístrate
+            </Text>
+          </TouchableOpacity>
         </View>
-      </View>
-      
-      <TouchableOpacity
-        style={styles.botonsiguiente}
-        onPress={handleLogin}
-      >
-        <Text style={styles.buttonText}>Siguiente</Text>
-      </TouchableOpacity>
-    </View>
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
-  safe:{
-    backgroundColor: '#fff',
-    paddingTop:40
-  },
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: '#fff',
-    paddingTop: 20,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
+  formContainer: {
+    padding: 20,
+    width: '100%',
+    maxWidth: 400,
+    alignSelf: 'center',
   },
   title: {
     fontSize: 24,
-    fontWeight: '500',
+    fontWeight: '600',
     marginBottom: 30,
-  },
-  subtitulo: {
-    marginBottom: 10,
-    fontWeight: 'bold',
+    textAlign: 'center',
   },
   inputContainer: {
-    width: '80%',
     marginBottom: 20,
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 8,
+    fontWeight: '500',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 4,
-    padding: 10,
-    marginBottom: 15,
-    height: 40,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    backgroundColor: '#fff',
   },
-  subtitulo: {
-    marginBottom:20
+  inputError: {
+    borderColor: '#ff4444',
   },
   phoneContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderColor: '#ccc',
-    borderRadius: 4,
-    alignContent:'center',
-    textAlign:'center'
   },
   phonePrefix: {
-    fontWeight: 'bold',
     fontSize: 16,
     marginRight: 10,
+    fontWeight: '600',
   },
   phoneInput: {
     flex: 1,
-    fontSize: 16,
-    borderColor: '#ccc',
     borderWidth: 1,
-    height: 40, 
-    padding: 20,
-    color: '#ccc'
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
   },
-  botonsiguiente: {
+  errorText: {
+    color: '#ff4444',
+    fontSize: 12,
+    marginTop: 4,
+  },
+  loginButton: {
     backgroundColor: '#FF4500',
-    width: '80%',
     padding: 15,
-    borderRadius: 4,
+    borderRadius: 8,
     alignItems: 'center',
     marginTop: 20,
   },
-  buttonText: {
+  loginButtonDisabled: {
+    backgroundColor: '#ffaa80',
+  },
+  loginButtonText: {
     color: '#fff',
+    fontSize: 16,
     fontWeight: '600',
+  },
+  registerLink: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  registerLinkText: {
+    color: '#FF4500',
+    fontSize: 14,
+    fontWeight: '500',
   },
 });
 

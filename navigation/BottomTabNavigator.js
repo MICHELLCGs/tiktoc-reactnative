@@ -6,6 +6,7 @@ import ProfileScreen from '../screens/ProfileScreen';
 import LoginScreen from '../authentication/Login/LoginScreen'; 
 import { useAuth } from '../authentication/AuthContext';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import HomeLogin from '../authentication/Login/HomeLogin';
 
 const Tab = createBottomTabNavigator();
 
@@ -43,7 +44,7 @@ const BottomTabNavigator = () => {
         }} />
       <Tab.Screen
         name="Perfil"
-        component={isLoggedIn ? ProfileScreen : ProfileScreen} // Muestra ProfileScreen si está logueado, de lo contrario, LoginScreen
+        component={isLoggedIn ? ProfileScreen : HomeLogin} // Muestra ProfileScreen si está logueado, de lo contrario, LoginScreen
         
 
         options={{title: 'Perfil' ,
