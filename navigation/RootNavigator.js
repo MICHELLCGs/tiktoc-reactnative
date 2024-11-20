@@ -7,6 +7,7 @@ import Pruebas from '../screens/stackscreens/Buscar';
 import ProfileScreen from '../screens/ProfileScreen';
 
 import Encuesta from '../components/Encuestas/encuesta';
+import Pelicula from '../components/Encuestas/pelicula';
 import Victoria from '../components/Encuestas/finalizacion';
 import Derrota from '../components/Encuestas/derrota';
 //nuevo
@@ -44,6 +45,7 @@ const RootNavigator = () => {
       
           <Stack.Screen name="Monedas" component={Monedas} options={{ headerTransparent: true, headerTitle: 'Monedas', headerBackTitle: 'Back' }} />
           <Stack.Screen name="Encuesta" component={Encuesta} options={{ headerTransparent: true, headerTitle: '', headerBackTitle: 'Back' }} />
+          <Stack.Screen name="Pelicula" component={Pelicula} options={{ headerTransparent: true, headerTitle: '', headerBackTitle: 'Back' }} />
           <Stack.Screen name="Victoria" component={Victoria} options={{ headerTransparent: true, headerTitle: '', headerBackTitle: 'Back' }} />
           <Stack.Screen name="Derrota" component={Derrota} options={{ headerTransparent: true, headerTitle: '', headerBackTitle: 'Back' }} />
           <Stack.Screen name="Plataforma" component={Plataforma} options={{ headerTransparent: true, headerTitle: '', headerBackTitle: 'Back' }} />

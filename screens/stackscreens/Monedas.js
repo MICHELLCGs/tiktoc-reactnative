@@ -33,7 +33,7 @@ const Monedas = ({ navigation }) => {
             ¡Es muy fácil! Participa en nuestras encuestas sobre las películas que mejor conoces. ¿Te sientes seguro? ¡Ven y demuestra tus conocimientos!
             </Text>
             <View style={styles.boton_encuesta_padre}>
-                <TouchableOpacity  style={styles.boton_encuesta} onPress={() => navigation.navigate('Encuesta')}>
+                <TouchableOpacity  style={styles.boton_encuesta} onPress={() => navigation.navigate('Pelicula')}>
                     <Text style={styles.boton_en}>
                         Participa ahora
                     </Text>

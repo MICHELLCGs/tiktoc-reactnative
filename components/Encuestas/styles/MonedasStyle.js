@@ -46,8 +46,8 @@ const styles = StyleSheet.create({
   boton_encuesta: {
     backgroundColor: '#6c63ff',
     padding: 12,
-    width:'50%',
-    
+    width:'100%',
+    textAlign:'center',
     backgroundColor:'#FF4500',
   },
   imagen:{
@@ -57,6 +57,40 @@ const styles = StyleSheet.create({
     textAlign:'center',
     fontSize: 16, fontWeight: 'bold' },
   boton_desactivado: { backgroundColor: '#FF7A49' },
+  header: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  image: {
+    width: '100%',
+    height: 200,
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+  tagsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    marginBottom: 20,
+  },
+  tag: {
+    backgroundColor: '#FF004F',
+    color: '#fff',
+    padding: 8,
+    marginRight: 10,
+    borderRadius: 20,
+    fontSize: 12,
+  },
+  movieTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  description: {
+    fontSize: 14,
+    color: '#555',
+    marginBottom: 20,
+  },
 });
 
 export default styles;
