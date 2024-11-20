@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { useAuth } from '../AuthContext';
 
+
 const LoginScreen = ({ navigation }) => {
   // Estados para los campos del formulario
   const [formData, setFormData] = useState({
