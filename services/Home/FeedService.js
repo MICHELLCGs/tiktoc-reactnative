@@ -1,5 +1,39 @@
-// FeedService.js
+import axios from 'axios';
+import { API_URL } from '@env';
 
+// Fetch videos from the API
+export const fetchVideos = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/videos`);
+    return response.data;  // Devuelve la lista de videos
+  } catch (error) {
+    console.error('Error fetching videos:', error);
+    return [];  // En caso de error, devuelve un array vacío
+  }
+};
+
+// Fetch comments of a specific video (GET request)
+export const fetchComments = async (videoId) => {
+  try {
+    const response = await axios.get(`${API_URL}/videos/${videoId}/comments`);
+    return response.data;  // Devuelve los comentarios de ese video
+  } catch (error) {
+    console.error('Error fetching comments:', error);
+    return [];  // En caso de error, devuelve un array vacío
+  }
+};
+
+// Add a comment to a specific video (POST request)
+export const addComment = async (videoId, comment) => {
+  try {
+    const response = await axios.post(`${API_URL}/videos/${videoId}/comments`, { comment });
+    return response.data;  // Devuelve el comentario recién agregado
+  } catch (error) {
+    console.error('Error adding comment:', error);
+    return null;  // En caso de error, devuelve null
+  }
+};
+/*
 export const fetchVideos = () => {
     return [
       {
@@ -44,4 +78,4 @@ export const fetchVideos = () => {
       },
     ];
   };
-  
+  */

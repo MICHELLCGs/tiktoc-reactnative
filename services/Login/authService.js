@@ -1,42 +1,43 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-const BASE_URL = "http://localhost:5000/api";
-
-//Login simulado
+import { API_URL } from '@env';
 
 
 export const login = async (email, password) => {
   try {
     console.log('Intentando autenticar:', { email, password });
 
-    // Obtener usuarios almacenados
-    const storedUsers = await AsyncStorage.getItem('registeredUsers');
-    const users = storedUsers ? JSON.parse(storedUsers) : [];
+    // Enviar solicitud POST al backend para autenticar al usuario
+    const response = await fetch(`${API_URL}/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    });
 
-    // Buscar usuario
-    const user = users.find(u => u.email === email);
-
-    if (user && user.password === password) {
-      // Guardar sesión actual
-      await AsyncStorage.setItem('currentUser', JSON.stringify(user));
-      await AsyncStorage.setItem('token', 'fake-jwt-token');
-
-      console.log('Inicio de sesión exitoso');
-      return {
-        user,
-        token: 'fake-jwt-token'
-      };
-    } else {
+    if (!response.ok) {
       throw new Error('Credenciales inválidas');
     }
+
+    const data = await response.json();
+
+    // Guardar sesión actual
+    await AsyncStorage.setItem('currentUser', JSON.stringify(data.user));
+    await AsyncStorage.setItem('token', data.token);  // Suponiendo que la API devuelve un token
+
+    console.log('Inicio de sesión exitoso');
+    return {
+      user: data.user,
+      token: data.token,
+    };
   } catch (error) {
     console.error('Error en el inicio de sesión:', error);
     throw error;
   }
 };
-  
 
 /*export const login = async (username, password) => {
-  const response = await fetch(`${BASE_URL}/auth/login`, {
+  const response = await fetch(`${API_URL}/auth/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -55,41 +56,32 @@ export const login = async (email, password) => {
 
 //Registro
 export const register = async (userData) => {
-  const response = await fetch(`${BASE_URL}/auth/register`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(userData), // Enviar datos del usuario
-  });
+  try {
+    const response = await fetch(`${API_URL}/auth/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(userData),
+    });
 
-  if (!response.ok) {
-    throw new Error("Error al registrar el usuario");
-  }
-
-  return response.json(); // Retorna la respuesta del backend
-};
-
-export const loadInitialState = async (setUser, setIsLoggedIn, setLoading) => {
-    try {
-      const [storedUser, token] = await Promise.all([
-        AsyncStorage.getItem('currentUser'),
-        AsyncStorage.getItem('token'),
-      ]);
-  
-      if (storedUser && token) {
-        setUser(JSON.parse(storedUser));
-        setIsLoggedIn(true); // Aquí aseguramos que se marque como logueado
-      } else {
-        setIsLoggedIn(false);
-      }
-    } catch (error) {
-      console.error('Error loading initial state:', error);
-      setIsLoggedIn(false);
-    } finally {
-      setLoading(false);
+    if (!response.ok) {
+      throw new Error('Error al registrar el usuario');
     }
-  };
+
+    const data = await response.json();
+
+    // Aquí puedes hacer algo adicional si es necesario, como guardar el token
+    // y el usuario autenticado
+    await AsyncStorage.setItem('currentUser', JSON.stringify(data.user));
+    await AsyncStorage.setItem('token', data.token);
+
+    return data;  // Retorna la respuesta con el usuario y el token
+  } catch (error) {
+    console.error('Error al registrar el usuario:', error);
+    throw error;
+  }
+};
 /*  
 export const loadInitialState = async (setUser, setIsLoggedIn, setLoading) => {
     try {
@@ -98,7 +90,7 @@ export const loadInitialState = async (setUser, setIsLoggedIn, setLoading) => {
   
       if (token) {
         // Si hay un token, validar con el backend (opcional)
-        const response = await fetch(`${BASE_URL}/auth/me`, {
+        const response = await fetch(`${API_URL}/auth/me`, {
           method: 'GET',
           headers: { Authorization: `Bearer ${token}` },
         });
