@@ -16,9 +16,8 @@ import { useAuth } from '../AuthContext';
 const LoginScreen = ({ navigation }) => {
   // Estados para los campos del formulario
   const [formData, setFormData] = useState({
-    email: '',
+    email: '',     // Cambiado de username a email para consistencia
     password: '',
-    phone: ''
   });
 
   // Estados para el manejo de errores y carga
@@ -33,15 +32,10 @@ const LoginScreen = ({ navigation }) => {
     const newErrors = {};
 
     // Validar email
-    // Validar email o teléfono
-if (!formData.email && !formData.phone) {
-  newErrors.credentials = 'Ingresa un correo o teléfono';
-}
-
-
-    // Validar teléfono
-    if (formData.phone && !/^[0-9]{9}$/.test(formData.phone)) {
-      newErrors.phone = 'El teléfono debe tener 9 dígitos';
+    if (!formData.email) {
+      newErrors.email = 'El email es requerido';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Ingresa un email válido';
     }
 
     // Validar contraseña
@@ -53,6 +47,13 @@ if (!formData.email && !formData.phone) {
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = () => {
+    if (validateForm()) {
+      // Redirigir a la pantalla "Validation" si el formulario es válido
+      navigation.navigate('Validation');
+    }
   };
 
   // Manejar cambios en los inputs
@@ -72,35 +73,27 @@ if (!formData.email && !formData.phone) {
 
   // Manejar el envío del formulario
   const handleLogin = async () => {
+    if (!validateForm()) return;
     try {
-      if (!validateForm()) return;
 
-      setIsLoading(true);
-      const user = await login(formData);
-      
-      if (user) {
+      console.log('Intentando iniciar sesión con::::::', formData);
+  
+      const result = await login(formData.email, formData.password);
+      if (!result) {
+        console.log('Login exitoso: no quieress', result);
         navigation.navigate('Validation');
       }
     } catch (error) {
+      console.error('Error en inicio de sesión:', error);
       Alert.alert(
         'Error de inicio de sesión',
-        error.message || 'Credenciales incorrectas'
+        error.message || 'Credenciales incorrectas. Por favor, intenta de nuevo.'
       );
-    } finally {
-      setIsLoading(false);
     }
-  };
-
-  // Renderizar el error
-  const renderError = (fieldName) => {
-    if (errors[fieldName]) {
-      return <Text style={styles.errorText}>{errors[fieldName]}</Text>;
-    }
-    return null;
   };
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
@@ -108,19 +101,19 @@ if (!formData.email && !formData.phone) {
         <View style={styles.formContainer}>
           <Text style={styles.title}>Iniciar Sesión</Text>
 
-          {/* Campo de correo */}
+          {/* Campo de email */}
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Correo</Text>
+            <Text style={styles.label}>Email</Text>
             <TextInput
               style={[styles.input, errors.email && styles.inputError]}
               placeholder="Correo electrónico"
               value={formData.email}
               onChangeText={(text) => handleChange('email', text)}
-              keyboardType="email-address"
               autoCapitalize="none"
+              keyboardType="email-address"
               editable={!isLoading}
             />
-            {renderError('email')}
+            {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
           </View>
 
           {/* Campo de contraseña */}
@@ -134,36 +127,12 @@ if (!formData.email && !formData.phone) {
               secureTextEntry
               editable={!isLoading}
             />
-            {renderError('password')}
-          </View>
-
-          {/* Campo de teléfono */}
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Teléfono</Text>
-            <View style={styles.phoneContainer}>
-              <Text style={styles.phonePrefix}>+51</Text>
-              <TextInput
-                style={[
-                  styles.phoneInput,
-                  errors.phone && styles.inputError
-                ]}
-                placeholder="Número de teléfono"
-                value={formData.phone}
-                onChangeText={(text) => handleChange('phone', text)}
-                keyboardType="numeric"
-                maxLength={9}
-                editable={!isLoading}
-              />
-            </View>
-            {renderError('phone')}
+            {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
           </View>
 
           {/* Botón de inicio de sesión */}
           <TouchableOpacity
-            style={[
-              styles.loginButton,
-              isLoading && styles.loginButtonDisabled
-            ]}
+            style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
             onPress={handleLogin}
             disabled={isLoading}
           >
@@ -191,91 +160,91 @@ if (!formData.email && !formData.phone) {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  scrollContainer: {
-    flexGrow: 1,
-    justifyContent: 'center',
-  },
-  formContainer: {
-    padding: 20,
-    width: '100%',
-    maxWidth: 400,
-    alignSelf: 'center',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '600',
-    marginBottom: 30,
-    textAlign: 'center',
-  },
-  inputContainer: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 16,
-    marginBottom: 8,
-    fontWeight: '500',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    backgroundColor: '#fff',
-  },
-  inputError: {
-    borderColor: '#ff4444',
-  },
-  phoneContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  phonePrefix: {
-    fontSize: 16,
-    marginRight: 10,
-    fontWeight: '600',
-  },
-  phoneInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-  },
-  errorText: {
-    color: '#ff4444',
-    fontSize: 12,
-    marginTop: 4,
-  },
-  loginButton: {
-    backgroundColor: '#FF4500',
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  loginButtonDisabled: {
-    backgroundColor: '#ffaa80',
-  },
-  loginButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  registerLink: {
-    marginTop: 20,
-    alignItems: 'center',
-  },
-  registerLinkText: {
-    color: '#FF4500',
-    fontSize: 14,
-    fontWeight: '500',
-  },
+container: {
+  flex: 1,
+  backgroundColor: '#fff',
+},
+scrollContainer: {
+  flexGrow: 1,
+  justifyContent: 'center',
+},
+formContainer: {
+  padding: 20,
+  width: '100%',
+  maxWidth: 400,
+  alignSelf: 'center',
+},
+title: {
+  fontSize: 24,
+  fontWeight: '600',
+  marginBottom: 30,
+  textAlign: 'center',
+},
+inputContainer: {
+  marginBottom: 20,
+},
+label: {
+  fontSize: 16,
+  marginBottom: 8,
+  fontWeight: '500',
+},
+input: {
+  borderWidth: 1,
+  borderColor: '#ddd',
+  borderRadius: 8,
+  padding: 12,
+  fontSize: 16,
+  backgroundColor: '#fff',
+},
+inputError: {
+  borderColor: '#ff4444',
+},
+phoneContainer: {
+  flexDirection: 'row',
+  alignItems: 'center',
+},
+phonePrefix: {
+  fontSize: 16,
+  marginRight: 10,
+  fontWeight: '600',
+},
+phoneInput: {
+  flex: 1,
+  borderWidth: 1,
+  borderColor: '#ddd',
+  borderRadius: 8,
+  padding: 12,
+  fontSize: 16,
+},
+errorText: {
+  color: '#ff4444',
+  fontSize: 12,
+  marginTop: 4,
+},
+loginButton: {
+  backgroundColor: '#FF4500',
+  padding: 15,
+  borderRadius: 8,
+  alignItems: 'center',
+  marginTop: 20,
+},
+loginButtonDisabled: {
+  backgroundColor: '#ffaa80',
+},
+loginButtonText: {
+  color: '#fff',
+  fontSize: 16,
+  fontWeight: '600',
+},
+registerLink: {
+  marginTop: 20,
+  alignItems: 'center',
+},
+registerLinkText: {
+  color: '#FF4500',
+  fontSize: 14,
+  fontWeight: '500',
+},
 });
 
 export default LoginScreen;

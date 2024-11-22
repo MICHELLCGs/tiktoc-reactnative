@@ -12,6 +12,7 @@ const Tab = createBottomTabNavigator();
 
 const BottomTabNavigator = () => {
   const { isLoggedIn } = useAuth();
+  console.log('Estado de isLoggedIn:', isLoggedIn); // Verificar el valor
 
   return (
     <Tab.Navigator

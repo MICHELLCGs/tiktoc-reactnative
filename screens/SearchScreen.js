@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,31 +8,16 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native';
-
+import { fetchVideos } from '../services/Search/SearchService';
 const SearchScreen = () => {
   const [searchText, setSearchText] = useState('');
-  const [videos, setVideos] = useState([
-    { id: '1', title: 'Video 1', thumbnail: 'https://via.placeholder.com/150' },
-    { id: '2', title: 'Video 2', thumbnail: 'https://via.placeholder.com/150' },
-    { id: '3', title: 'Video 3', thumbnail: 'https://via.placeholder.com/150' },
-    { id: '4', title: 'Video 4', thumbnail: 'https://via.placeholder.com/150' },
-    { id: '5', title: 'Video 5', thumbnail: 'https://via.placeholder.com/150' },
-    { id: '6', title: 'Video 6', thumbnail: 'https://via.placeholder.com/150' },
-    { id: '7', title: 'Video 1', thumbnail: 'https://via.placeholder.com/150' },
-    { id: '8', title: 'Video 2', thumbnail: 'https://via.placeholder.com/150' },
-    { id: '9', title: 'Video 3', thumbnail: 'https://via.placeholder.com/150' },
-    { id: '10', title: 'Video 4', thumbnail: 'https://via.placeholder.com/150' },
-    { id: '11', title: 'Video 5', thumbnail: 'https://via.placeholder.com/150' },
-    { id: '12', title: 'Video 6', thumbnail: 'https://via.placeholder.com/150' },
-    { id: '13', title: 'Video 1', thumbnail: 'https://via.placeholder.com/150' },
-    { id: '14', title: 'Video 2', thumbnail: 'https://via.placeholder.com/150' },
-    { id: '15', title: 'Video 3', thumbnail: 'https://via.placeholder.com/150' },
-    { id: '16', title: 'Video 4', thumbnail: 'https://via.placeholder.com/150' },
-    { id: '17', title: 'Video 5', thumbnail: 'https://via.placeholder.com/150' },
-    { id: '18', title: 'Video 6', thumbnail: 'https://via.placeholder.com/150' },
-    // Agrega más videos si es necesario
-  ]);
+  const [videos, setVideos] = useState([]);
 
+  useEffect(() => {
+    // Llamar a fetchVideos para obtener los datos simulados
+    const fetchedVideos = fetchVideos();
+    setVideos(fetchedVideos);
+  }, []);
   // Filtrar videos según el texto de búsqueda
   const filteredVideos = videos.filter((video) =>
     video.title.toLowerCase().includes(searchText.toLowerCase())
@@ -91,7 +76,7 @@ const styles = StyleSheet.create({
   },
   thumbnail: {
     width: 150,
-    height: 100,
+    height: 200,
     borderRadius: 8,
   },
   videoTitle: {
