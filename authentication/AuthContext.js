@@ -1,117 +1,86 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { login as loginService, register as registerService ,loadInitialState } from "../services/Login/authService";
-
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null); // Usuario autenticado
-  const [token, setToken] = useState(null); // Token de autenticación
-
-  //
+  const [user, setUser] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [registeredUsers, setRegisteredUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-
   // Cargar estado inicial al montar el componente
   useEffect(() => {
-    // Cargar usuarios registrados al iniciar
-    const loadRegisteredUsers = async () => {
-      try {
-        const stored = await AsyncStorage.getItem('registeredUsers');
-        if (stored) {
-          setRegisteredUsers(JSON.parse(stored));
-        }
-      } catch (error) {
-        console.error('Error loading registered users:', error);
-      }
-    };
-
-    loadRegisteredUsers();
-    loadInitialState(setUser, setIsLoggedIn, setLoading);
+    loadInitialState();
   }, []);
 
-  
-  
-
-  const login = async (username, password) => {
+  const loadInitialState = async () => {
     try {
-      const token = await loginService(username, password); // Llamar al servicio
-      setToken(token); // Guardar el token
-      setUser({ username }); // Guardar los datos del usuario
-      setIsLoggedIn(true); // Marcar como logueado
-    } catch (error) {
-      console.error("Error al iniciar sesión:", error.message);
-      throw error;
-    }
-  };
-
-
-  // Cerrar sesión
-  const logout = async () => {
-    try {
-      // Limpiar AsyncStorage y estado
-      await Promise.all([
-        AsyncStorage.removeItem('currentUser'),
-        AsyncStorage.removeItem('isVerified')
+      const [storedUsers, storedUser, verificationStatus] = await Promise.all([
+        AsyncStorage.getItem('registeredUsers'),
+        AsyncStorage.getItem('currentUser'),
+        AsyncStorage.getItem('isVerified')
       ]);
 
-      setUser(null);
-      setIsLoggedIn(false);
+      if (storedUsers) {
+        setRegisteredUsers(JSON.parse(storedUsers));
+      }
+
+      if (storedUser) {
+        const userData = JSON.parse(storedUser);
+        setUser(userData);
+        setIsLoggedIn(true);
+        setIsVerified(verificationStatus === 'true');
+      }
+    } catch (error) {
+      console.error('Error loading initial state:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Registro de usuario
+  const register = async (userData) => {
+    try {
+      // Verificar si el usuario ya existe
+      const userExists = registeredUsers.some(
+        user => user.email === userData.email || user.phone === userData.phone
+      );
+
+      if (userExists) {
+        throw new Error('El usuario ya existe');
+      }
+
+      const newUser = { 
+        ...userData, 
+        isVerified: false,
+        id: Date.now().toString(), // Generamos un ID único
+        createdAt: new Date().toISOString()
+      };
+
+      const updatedUsers = [...registeredUsers, newUser];
+      
+      // Actualizar estado y AsyncStorage
+      await Promise.all([
+        AsyncStorage.setItem('registeredUsers', JSON.stringify(updatedUsers)),
+        AsyncStorage.setItem('currentUser', JSON.stringify(newUser))
+      ]);
+
+      setRegisteredUsers(updatedUsers);
+      setUser(newUser);
+      setIsLoggedIn(true);
       setIsVerified(false);
-      setToken(null); // Limpiar token
+
       return true;
     } catch (error) {
-      console.error('Error en logout:', error);
+      console.error('Error en registro:', error);
       throw error;
     }
   };
 
-// En AuthContext.js
-const register = async (userData) => {
-  try {
-    // Verificar si el usuario ya existe
-    const userExists = registeredUsers.some(
-      user => user.email === userData.email
-    );
-
-    if (userExists) {
-      throw new Error('El usuario ya existe');
-    }
-
-    const newUser = { 
-      ...userData, 
-      isVerified: false,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString()
-    };
-
-    const updatedUsers = [...registeredUsers, newUser];
-    
-    // Actualizar estado y AsyncStorage
-    await Promise.all([
-      AsyncStorage.setItem('registeredUsers', JSON.stringify(updatedUsers)),
-      AsyncStorage.setItem('currentUser', JSON.stringify(newUser))
-    ]);
-
-    setRegisteredUsers(updatedUsers);
-    setUser(newUser);
-    setIsLoggedIn(true);
-    setIsVerified(false);
-
-    return { success: true, user: newUser };
-  } catch (error) {
-    console.error('Error en registro:', error);
-    throw error;
-  }
-};
-
-
   // Inicio de sesión
-  /*const login = async (credentials) => {
+  const login = async (credentials) => {
     try {
       const matchedUser = registeredUsers.find(
         user => (user.email === credentials.email || user.phone === credentials.phone) 
@@ -134,7 +103,7 @@ const register = async (userData) => {
       throw error;
     }
   };
-*/
+
   // Validación de código
   const validateCode = async (code) => {
     try {
@@ -169,7 +138,7 @@ const register = async (userData) => {
   };
 
   // Cerrar sesión
-  /*const logout = async () => {
+  const logout = async () => {
     try {
       // Limpiar AsyncStorage y estado
       await Promise.all([
@@ -187,8 +156,6 @@ const register = async (userData) => {
       throw error;
     }
   };
-*/
-
 
   // Actualizar perfil de usuario
   const updateUserProfile = async (updatedData) => {
@@ -214,18 +181,16 @@ const register = async (userData) => {
     }
   };
 
-
   const contextValue = {
     user,
-    token,
-    isVerified,
-    //loading,
     isLoggedIn,
+    isVerified,
+    loading,
     register,
     login,
     logout,
     validateCode,
-    //updateUserProfile
+    updateUserProfile
   };
 
   return (

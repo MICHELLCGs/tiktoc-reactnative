@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from '@env';
-
+/*
 
 export const login = async (email, password) => {
   try {
@@ -35,7 +35,7 @@ export const login = async (email, password) => {
     throw error;
   }
 };
-
+*/
 /*export const login = async (username, password) => {
   const response = await fetch(`${API_URL}/auth/login`, {
     method: "POST",
@@ -53,7 +53,7 @@ export const login = async (email, password) => {
   return data.token; // Retorna el token del backend
 };*/
 
-
+/*
 //Registro
 export const register = async (userData) => {
   try {
@@ -81,7 +81,7 @@ export const register = async (userData) => {
     console.error('Error al registrar el usuario:', error);
     throw error;
   }
-};
+};*/
 /*  
 export const loadInitialState = async (setUser, setIsLoggedIn, setLoading) => {
     try {
