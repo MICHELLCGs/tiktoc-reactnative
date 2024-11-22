@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet,SafeAreaView } from 'react-native';
 import { useAuth } from '../AuthContext';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import AuthGoogle from '../../services/auth-google';
 
 
 // Función para cargar las fuentes
@@ -41,10 +42,7 @@ const HomeRegister = ({ navigation }) => {
             </View>
 
             <View style={styles.boton_home_login}>
-                <TouchableOpacity style={styles.boton_home} onPress={() => alert('Continue with Google')}>
-                    <Icon name="google" size={20} color="black" style={styles.icon} />
-                    <Text style={styles.buttonText}>Continue with Google</Text>
-                </TouchableOpacity>
+                <AuthGoogle/> 
             </View>   
                 
             <View style={styles.terminos}>
