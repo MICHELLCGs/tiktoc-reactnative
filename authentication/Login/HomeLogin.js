@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet,SafeAreaView } from 'react-native';
 import { useAuth } from '../AuthContext';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import AuthGoogle from '../../services/auth-google';
 
 
 // Función para cargar las fuentes
@@ -39,13 +40,10 @@ const HomeLogin = ({ navigation }) => {
                     <Text style={styles.buttonText}>Use phone or email</Text>
                 </TouchableOpacity>
             </View>
-
             <View style={styles.boton_home_login}>
-                <TouchableOpacity style={styles.boton_home} onPress={() => alert('Continue with Google')}>
-                    <Icon name="google" size={20} color="black" style={styles.icon} />
-                    <Text style={styles.buttonText}>Continue with Google</Text>
-                </TouchableOpacity>
-            </View>   
+                <AuthGoogle/> 
+            </View>
+            
                 
             <View style={styles.terminos}>
                 <Text style={styles.terminos_int}>Al continuar, aceptas nuestros <Text style={{color: 'rgba(0, 0, 0, 0.8)'}}>Términos de Servicio</Text> y reconoces que has leído nuestra <Text style={{color: 'rgba(0, 0, 0, 0.8)'}}>Política de Privacidad</Text> para saber cómo recopilamos, usamos y compartimos tus datos, y nuestra </Text>
